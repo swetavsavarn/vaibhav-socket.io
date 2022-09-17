@@ -1,0 +1,65 @@
+<html>
+    <body>
+        <div id="error-container"></div>
+        <li id="global">No of global user</li>
+        _
+        <form>
+            <input type="text" id="username" placeholder="enter user name">
+            <input type="text" id="roomname" placeholder="enter room name">
+            <button type="submit" id="submit" >join room</button>
+            
+
+        </form>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            var socket = io();
+            let ul=document.createElement('ul')
+            socket.on('no',(data)=>{
+              let global= document.getElementById('global')
+              
+              ul.innerText=data
+              global.appendChild(ul)
+               
+            })
+            
+           document.getElementById('submit').addEventListener('click',(e)=>{
+            e.preventDefault()
+            var obj={
+                username:document.getElementById('username').value,
+                roomname:document.getElementById('roomname').value
+
+            }
+            socket.emit('joinroom', obj);
+            socket.on('userExists', function(data){
+                
+         document.getElementById('error-container').innerHTML = data;
+      })})
+
+
+      socket.on('userSet', function(data){
+         user = data.username;
+         document.body.innerHTML = '<input type="text" id="message">\
+         <button type="submit" name="btn" onclick="s()">send</button>\
+         <div id="message-container"></div>';
+      });
+      function s(){
+         var msg = document.getElementById('message').value;
+         console.log(msg)
+         if(msg){
+            socket.emit('msg', {message: msg, user: user});
+         }
+      }
+      socket.on('newmsg', function(data){
+         if(user){
+            document.getElementById('message-container').innerHTML +='<div><b>' + data.user + '</b>: ' + data.message + '</div>'
+         }
+      })
+
+            
+           
+
+
+
+        </script>
+    </body>
+</html>
